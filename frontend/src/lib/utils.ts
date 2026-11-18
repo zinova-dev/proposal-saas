@@ -1,10 +1,10 @@
 /**
- * Formats a number to a currency string.
- * Defaults to USD for international clients.
+ * Formats a number to US Dollar currency.
+ * Enforced for the American market standard.
  */
-export function formatCurrency(value: number, currency: string = 'USD') {
+export function formatCurrency(value: number) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: currency,
+    currency: 'USD',
   }).format(value);
 }

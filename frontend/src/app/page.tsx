@@ -43,7 +43,6 @@ export default function Dashboard() {
   };
 
   const handleDownloadPdf = (id: number) => {
-    // Open the PDF endpoint directly in a new tab to trigger download
     const baseUrl = process.env.NEXT_PUBLIC_API_URL;
     window.open(`${baseUrl}/proposals/${id}/pdf`, '_blank');
   };
