@@ -1,0 +1,45 @@
+1. O Problema (A Dor do Cliente)
+Imagine um freelancer (um designer, um dev, um consultor de marketing) ou uma pequena agência. Ele acabou de ter uma reunião com um cliente em potencial. O cliente diz: "Gostei da sua ideia, me manda uma proposta comercial com os valores para eu aprovar".
+O que esse freelancer faz hoje? Ele abre o Word ou o Google Docs, luta com a formatação, esquece de calcular os impostos corretamente, gera um PDF feio, envia por e-mail e depois perde o controle de quantas propostas ele enviou, quais foram aceites e quais ficaram pendentes.
+
+2. A Solução (O nosso Produto)
+O Proposal SaaS é uma aplicação web onde esse profissional faz login e tem um "Painel de Controle" (Dashboard).
+Nele, ele pode:
+
+Registar Clientes: Guardar os dados da empresa (nome, e-mail, contato).
+
+Criar Propostas: Escolher o cliente, dar um título à proposta e adicionar "Itens" (ex: Desenvolvimento de Website - 1x - $2000).
+
+Automatizar Cálculos: O sistema calcula o Subtotal, aplica a Taxa de Imposto (ex: 15%) e mostra o Total final em tempo real. O utilizador não precisa de fazer contas.
+
+Gerir o Status: Marcar a proposta como "Rascunho" (Draft), "Enviada" (Sent) ou "Aceite" (Accepted).
+
+Exportar: (Este será o nosso próximo passo) Gerar um PDF bonito e profissional daquela proposta para enviar ao cliente final.
+
+3. Como a Engenharia Funciona (O que estamos a codar)
+Nós dividimos o sistema em duas partes que conversam entre si (Arquitetura Cliente-Servidor):
+
+O Backend (Python/Django): É o "cérebro" e o "cofre". Ele guarda os dados no banco de dados, valida se a matemática está certa (para ninguém enviar uma proposta com valores negativos), e garante que o Freelancer A não consiga ver as propostas do Freelancer B (isolamento de dados). Já está a funcionar na porta 8000.
+
+O Frontend (Next.js/React): É a "cara" do sistema. É o que o utilizador vê no navegador. Ele pega os dados que o utilizador digita, envia para o Backend, e mostra os dados bonitos na tela (com Tailwind CSS).
+
+4. O Valor de Mercado (Por que isso dá dinheiro?)
+No mercado americano, existem ferramentas semelhantes (como Bonsai, PandaDoc, Proposify). Elas cobram entre $20 e $50 por mês por utilizador.
+Empresas pagam por isso porque poupa tempo, profissionaliza a imagem do freelancer (uma proposta bonita fecha mais contratos) e organiza o financeiro.
+
+5. Por que a construção deste sistema para o portifólio?
+Quando um recrutador americano abrir o seu GitHub e clicar no link do projeto, ele vai ver que você:
+
+Sabe modelar um banco de dados relacional complexo (Cliente -> Proposta -> Itens).
+
+Sabe fazer cálculos no backend (regras de negócio).
+
+Sabe criar uma API RESTful moderna e documentada (Django Ninja).
+
+Sabe consumir essa API num frontend moderno (Next.js).
+
+Sabe criar formulários com validação (React Hook Form + Zod).
+
+Isso não é um "To-Do List" de tutorial. É um SaaS de nível de produção. É exatamente o tipo de projeto que faz um recrutador parar e dizer: "Esse candidato entende de produto e de engenharia".
+
+Resumo da obra: "Canva/Word" específico para criação de propostas comerciais, focado em automação de cálculos e organização de clientes, usando as stacks mais modernas do mercado.
