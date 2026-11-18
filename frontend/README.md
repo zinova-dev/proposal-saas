@@ -1,36 +1,33 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Proposal SaaS
 
-## Getting Started
+A full-stack SaaS application that helps freelancers create, manage, and export professional commercial proposals.
 
-First, run the development server:
+Live Demo: https://proposal-saas-lovat.vercel.app
+API Docs: https://proposal-saas-api.onrender.com/api/docs
+Tech Stack: Django Ninja (Backend) · Next.js (Frontend) · PostgreSQL · Tailwind CSS · WeasyPrint (PDF Generation)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+The Problem
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Freelancers waste hours formatting proposals in Word or Google Docs. This tool streamlines the process: users input their scope of work, the system calculates taxes and totals, and generates a clean PDF ready to send to clients.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Engineering Decisions
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Backend Choice (Django over FastAPI): Chose Django Ninja because the project requires a built-in admin interface for internal operations and a mature ORM for complex relational data (Users -> Proposals -> Line Items). The async performance of FastAPI was not necessary for this CRUD-heavy workflow.
+- Frontend Choice (Next.js over React+Vite): Used Next.js for the public-facing landing page to ensure SEO optimization and fast First Contentful Paint. The authenticated dashboard leverages Next.js server components for secure data fetching.
+- PDF Generation: Rejected client-side PDF generation to avoid browser inconsistencies. Implemented server-side generation using Python's `WeasyPrint` with HTML templates, ensuring consistent formatting across all devices (including multi-page pagination).
+- Database: Used SQLite for local development to ensure quick setup, and migrated to PostgreSQL for production on Render.
 
-## Learn More
+Features
 
-To learn more about Next.js, take a look at the following resources:
+- [x] User authentication (In development)
+- [x] CRUD for Proposals and Clients
+- [x] Tax calculation logic (Customizable per proposal)
+- [x] Server-side PDF export with multi-page support
+- [x] Dashboard with proposal status tracking (Draft, Sent, Accepted)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Local Setup
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Clone the repo.
+2. Backend: `cd backend && pip install -r requirements.txt && python manage.py migrate && python manage.py runserver`
+3. Frontend: `cd frontend && npm install && npm run dev`
+4. Set up `.env` for database credentials.
