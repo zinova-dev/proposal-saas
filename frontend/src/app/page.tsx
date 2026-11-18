@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { api } from '@/lib/api';
 import { formatCurrency } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
-import { Plus, FileText, CheckCircle2, Clock } from 'lucide-react';
+import { Plus, FileText, CheckCircle2, Clock, Download } from 'lucide-react';
 
 interface Proposal {
   id: number;
@@ -31,7 +31,6 @@ export default function Dashboard() {
         setIsLoading(false);
       }
     }
-
     fetchProposals();
   }, []);
 
@@ -41,6 +40,12 @@ export default function Dashboard() {
       case 'SENT': return <Clock className="w-4 h-4 text-blue-500" />;
       default: return <FileText className="w-4 h-4 text-gray-500" />;
     }
+  };
+
+  const handleDownloadPdf = (id: number) => {
+    // Open the PDF endpoint directly in a new tab to trigger download
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+    window.open(`${baseUrl}/proposals/${id}/pdf`, '_blank');
   };
 
   return (
@@ -75,6 +80,7 @@ export default function Dashboard() {
                 <th className="px-6 py-3">Status</th>
                 <th className="px-6 py-3">Date</th>
                 <th className="px-6 py-3 text-right">Total</th>
+                <th className="px-6 py-3 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -90,6 +96,15 @@ export default function Dashboard() {
                   </td>
                   <td className="px-6 py-4 text-right font-medium text-gray-900">
                     {formatCurrency(proposal.total)}
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <button
+                      onClick={() => handleDownloadPdf(proposal.id)}
+                      className="text-blue-600 hover:text-blue-800 transition-colors p-2 rounded-full hover:bg-blue-50"
+                      title="Download PDF"
+                    >
+                      <Download className="w-5 h-5" />
+                    </button>
                   </td>
                 </tr>
               ))}

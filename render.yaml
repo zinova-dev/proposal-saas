@@ -1,0 +1,24 @@
+databases:
+  - name: proposal-saas-db
+    plan: free
+    databaseName: proposal_saas
+    user: proposal_user
+
+services:
+  - type: web
+    plan: free
+    name: proposal-saas-api
+    runtime: python
+    rootDir: backend
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn core.wsgi:application"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: proposal-saas-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: WEB_CONCURRENCY
+        value: 4
+        
