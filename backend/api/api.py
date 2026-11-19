@@ -86,6 +86,13 @@ def list_proposals(request):
     )
 
 
+@router.delete("/{proposal_id}", response={204: None}, auth=AuthBearer())
+def delete_proposal(request, proposal_id: int):
+    proposal = get_object_or_404(Proposal, id=proposal_id, user=request.auth)
+    proposal.delete()
+    return 204, None
+
+
 @router.get("/{proposal_id}/pdf", auth=[AuthBearer(), QueryTokenAuth()])
 def export_proposal_pdf(request, proposal_id: int):
     proposal = get_object_or_404(Proposal, id=proposal_id, user=request.auth)
