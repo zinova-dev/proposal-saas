@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { formatCurrency } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
-import { Plus, FileText, CheckCircle2, Clock, Download } from 'lucide-react';
+import { Plus, FileText, CheckCircle2, Clock, Download, LogOut } from 'lucide-react';
 
 interface Proposal {
   id: number;
@@ -17,22 +18,38 @@ interface Proposal {
 }
 
 export default function Dashboard() {
+  const router = useRouter();
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+
     async function fetchProposals() {
       try {
         const response = await api.get('/proposals/');
         setProposals(response.data);
-      } catch (error) {
+      } catch (error: any) {
+        if (error.response?.status === 401) {
+          localStorage.removeItem('token');
+          router.push('/login');
+        }
         console.error('Failed to fetch proposals:', error);
       } finally {
         setIsLoading(false);
       }
     }
     fetchProposals();
-  }, []);
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    router.push('/login');
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -44,7 +61,11 @@ export default function Dashboard() {
 
   const handleDownloadPdf = (id: number) => {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-    window.open(`${baseUrl}/proposals/${id}/pdf`, '_blank');
+    // Note: For a real production app, you'd need to pass the token in the request.
+    // Since this is a browser window.open, we'll handle it by appending the token as a query param
+    // for simplicity in this demo. (Not best practice for production, but works for portfolio).
+    const token = localStorage.getItem('token');
+    window.open(`${baseUrl}/proposals/${id}/pdf?token=${token}`, '_blank');
   };
 
   return (
@@ -54,14 +75,21 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold text-gray-900">Proposals</h1>
           <p className="text-gray-500 text-sm mt-1">Manage your commercial proposals and track their status.</p>
         </div>
-        <Link href="/proposals/new">
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            New Proposal
+        <div className="flex gap-4">
+          <Button variant="secondary" onClick={handleLogout}>
+            <LogOut className="w-4 h-4 mr-2" />
+            Logout
           </Button>
-        </Link>
+          <Link href="/proposals/new">
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              New Proposal
+            </Button>
+          </Link>
+        </div>
       </header>
 
+      {/* ... Tabela de Propostas permanece igual ... */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         {isLoading ? (
           <div className="p-8 text-center text-gray-500">Loading proposals...</div>
