@@ -2,31 +2,49 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import axios from 'axios';
+import { Plus, Trash2, ArrowLeft } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Plus, Trash2, ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
 
 const proposalSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
   description: z.string().optional(),
   tax_rate: z.number().min(0).max(100),
-  items: z.array(z.object({
-    description: z.string().min(1, 'Description is required'),
-    quantity: z.number().min(1, 'Min quantity is 1'),
-    unit_price: z.number().min(0, 'Price must be positive'),
-  })).min(1, 'At least one item is required'),
+  items: z
+    .array(
+      z.object({
+        description: z.string().min(1, 'Description is required'),
+        quantity: z.number().min(1, 'Min quantity is 1'),
+        unit_price: z.number().min(0, 'Price must be positive'),
+      })
+    )
+    .min(1, 'At least one item is required'),
 });
 
 type ProposalFormValues = z.infer<typeof proposalSchema>;
 
+function getErrorMessage(error: unknown): string {
+  if (axios.isAxiosError(error)) {
+    if (!error.response) {
+      return 'Unable to reach the server. It may be waking up, please try again in a minute.';
+    }
+    const detail = error.response.data?.detail ?? error.response.data?.error;
+    const message = typeof detail === 'string' ? detail : JSON.stringify(detail);
+    return `Request failed (${error.response.status})${message ? `: ${message}` : ''}`;
+  }
+  return 'Something went wrong while creating the proposal.';
+}
+
 export default function ProposalForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const {
     register,
@@ -48,12 +66,20 @@ export default function ProposalForm() {
 
   const onSubmit = async (data: ProposalFormValues) => {
     setIsSubmitting(true);
+    setSubmitError('');
+
     try {
       await api.post('/proposals/', { ...data, client_id: 1 });
       router.push('/');
       router.refresh();
     } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        localStorage.removeItem('token');
+        router.push('/login');
+        return;
+      }
       console.error('Failed to create proposal', error);
+      setSubmitError(getErrorMessage(error));
     } finally {
       setIsSubmitting(false);
     }
@@ -71,7 +97,16 @@ export default function ProposalForm() {
         </div>
       </header>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-6 bg-white p-6 rounded-xl shadow-sm border border-gray-200"
+      >
+        {submitError && (
+          <div role="alert" className="p-3 bg-red-50 text-red-600 rounded-md text-sm">
+            {submitError}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             label="Proposal Title"
@@ -92,7 +127,10 @@ export default function ProposalForm() {
           <label className="text-sm font-medium text-gray-700 mb-2 block">Line Items</label>
           <div className="space-y-4">
             {fields.map((field, index) => (
-              <div key={field.id} className="flex gap-4 items-start p-4 bg-gray-50 rounded-lg border border-gray-100">
+              <div
+                key={field.id}
+                className="flex gap-4 items-start p-4 bg-gray-50 rounded-lg border border-gray-100"
+              >
                 <div className="flex-1">
                   <Input
                     placeholder="Item description"
