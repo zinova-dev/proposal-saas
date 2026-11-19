@@ -1,52 +1,59 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
-from django.conf import settings
-from ninja import Schema
-from ninja.security import HttpBearer
-import jwt
-from django.contrib.auth import get_user_model
 
-# --- Schemas ---
+import jwt
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from ninja import Schema
+from ninja.security import APIKeyQuery, HttpBearer
+
 
 class UserRegisterSchema(Schema):
     username: str
     password: str
     email: Optional[str] = None
 
+
 class UserLoginSchema(Schema):
     username: str
     password: str
+
 
 class TokenSchema(Schema):
     access_token: str
     token_type: str
 
-# --- Authentication Logic ---
+
+def create_access_token(user_id: int) -> str:
+    """Issues a signed JWT valid for 7 days."""
+    expiration = datetime.now(timezone.utc) + timedelta(days=7)
+    payload = {"user_id": user_id, "exp": expiration}
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+
+def _resolve_user(token: str):
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        return get_user_model().objects.get(id=payload["user_id"])
+    except (jwt.PyJWTError, KeyError, get_user_model().DoesNotExist):
+        return None
+
 
 class AuthBearer(HttpBearer):
+    """Authenticates requests using the Authorization: Bearer header."""
+
     def authenticate(self, request, token):
-        # Check if token is passed in the query params (for PDF download)
-        if not token:
-            token = request.GET.get('token')
-            
-        if not token:
-            return None
+        return _resolve_user(token)
 
-        try:
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            User = get_user_model()
-            user = User.objects.get(id=payload["user_id"])
-            return user
-        except Exception:
-            return None
 
-def create_access_token(user_id: int):
+class QueryTokenAuth(APIKeyQuery):
     """
-    Generates a JWT token valid for 7 days.
+    Authenticates requests using a ?token= query parameter.
+    Needed for browser-initiated downloads, which cannot set custom headers.
     """
-    expiration = datetime.utcnow() + timedelta(days=7)
-    payload = {
-        "user_id": user_id,
-        "exp": expiration
-    }
-    return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+    param_name = "token"
+
+    def authenticate(self, request, key):
+        return _resolve_user(key)
+    
