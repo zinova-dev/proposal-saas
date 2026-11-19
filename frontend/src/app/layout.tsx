@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { DomSafeguard } from "@/components/DomSafeguard";
 
 export const metadata: Metadata = {
   title: "Proposal SaaS | Manage your commercial proposals",
   description: "A professional tool for freelancers to generate and manage commercial proposals.",
-  other: {
-    google: "notranslate",
-  },
 };
 
 export default function RootLayout({
@@ -15,8 +13,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" translate="no">
-      <body className="notranslate bg-gray-50 text-gray-900 antialiased font-sans">
+    <html lang="en">
+      <body className="bg-gray-50 text-gray-900 antialiased font-sans">
+        <DomSafeguard />
         {children}
       </body>
     </html>
